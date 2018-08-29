@@ -41,7 +41,7 @@
     border-radius: 0;
   }
 
-   .ck-editor__top {
+   trix-toolbar, .ck-editor__top {
     border-bottom: 1px solid #ccc;
     flex-direction: column;
     flex: 36px;
@@ -57,7 +57,7 @@
     overflow: hidden;
   }
 
-  .ck-editor__editable {
+  trix-editor, .ck-editor__editable {
     flex: auto;
     flex-direction: column;
     height: 100%;
@@ -180,7 +180,3 @@
     }
   }
 }
-
-
-
-

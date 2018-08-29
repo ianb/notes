@@ -1,12 +1,15 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+import { TrixEditor } from 'react-trix';
 
 import INITIAL_CONFIG from '../data/editorConfig';
 import { SEND_TO_NOTES, FROM_BLANK_NOTE } from '../utils/constants';
 import { getPadStats, customizeEditor } from '../utils/editor';
 
 import { updateNote, createNote, deleteNote, setFocusedNote } from '../actions';
+
+console.log("Editor.js loaded");
 
 const styles = {
   container: {
@@ -28,7 +31,8 @@ class Editor extends React.Component {
       if (eventData.action === SEND_TO_NOTES) {
         browser.windows.getCurrent({populate: true}).then((windowInfo) => {
           if (windowInfo.id === eventData.windowId) {
-            let content = this.editor.getData();
+            let content = this.editor.toJSON();
+            console.log("my content?", content);
             if (content === '<p>&nbsp;</p>') content = '';
             this.editor.setData(content + `<p>${eventData.text}</p>`);
           }
@@ -38,8 +42,7 @@ class Editor extends React.Component {
   }
 
   componentDidMount() {
-
-    ClassicEditor.create(this.node, INITIAL_CONFIG)
+    false && ClassicEditor.create(this.node, INITIAL_CONFIG)
       .then(editor => {
         this.editor = editor;
 
@@ -102,8 +105,11 @@ class Editor extends React.Component {
       }
       if (!this.delayUpdateNote) { // If no delay waiting, we apply modification
         this.ignoreChange = true;
-        this.editor.setData(nextProps.note.content || '<p></p>');
-        this.editor.editing.view.focus();
+        // FIXME: set the selection to all, I guess?
+        console.log("trying to insert HTML", nextProps.note.content);
+        this.editor.insertHTML(nextProps.note.content || '<p></p>');
+        // this.editor.setData(nextProps.note.content || '<p></p>');
+        // this.editor.editing.view.focus();
       }
     }
   }
@@ -116,7 +122,26 @@ class Editor extends React.Component {
     }
   }
 
+  handleEditorReady(editor) {
+    // this is a reference back to the editor if you want to
+    // do editing programatically
+    this.editor = editor;
+    chrome.runtime.onMessage.addListener(this.sendToNoteListener);
+  }
+
+  handleChange(html, text) {
+    // console.log("got change", html, text);
+  }
+
   render() {
+    return (
+      <div style={styles.container}>
+        <div className="editorWrapper">
+          <TrixEditor onChange={this.handleChange.bind(this)} onEditorReady={this.handleEditorReady.bind(this)} autofocus={true} value={this.props.note.content} />;
+        </div>
+      </div>
+    );
+    /*
     return (
       <div style={styles.container}>
         <div className="editorWrapper">
@@ -131,6 +156,7 @@ class Editor extends React.Component {
 
       </div>
     );
+    */
   }
 }
 
